@@ -14,7 +14,7 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -52,10 +52,24 @@ jobs:
       - name: Build package
         run: python -m build
 
-      - name: Publish to PyPI
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+  publish-to-marketplace:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate tag
+        id: tag
         run: |
-          twine upload dist/*
+          VERSION=$(date +'%Y.%m.%d-%H%M%S')
+          echo "::set-output name=version::$VERSION"
+          git tag $VERSION
+          git push origin $VERSION
+
+      - name: Publish to GitHub Marketplace
+        uses: actions/publish-action@v0.2.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          source-tag: ${{ steps.tag.outputs.version }}

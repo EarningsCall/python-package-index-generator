@@ -24,7 +24,7 @@ runs:
     - name: Generate Index
       shell: bash
       run: |
-        python ${{ github.action_path }}/generat-index.py --s3-bucket-name ${{ inputs.s3_bucket_name }}
+        python ${{ github.action_path }}/generate-index.py --s3-bucket-name ${{ inputs.s3_bucket_name }}
 
 branding:
   icon: "package"
