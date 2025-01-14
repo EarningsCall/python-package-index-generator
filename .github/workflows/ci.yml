@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  release:
+    types: [published, edited]
 
 jobs:
   test:
@@ -51,25 +53,3 @@ jobs:
 
       - name: Build package
         run: python -m build
-
-  publish-to-marketplace:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Generate tag
-        id: tag
-        run: |
-          VERSION=$(date +'%Y.%m.%d-%H%M%S')
-          echo "::set-output name=version::$VERSION"
-          git tag $VERSION
-          git push origin $VERSION
-
-      - name: Publish to GitHub Marketplace
-        uses: actions/publish-action@v0.2.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          source-tag: ${{ steps.tag.outputs.version }}
